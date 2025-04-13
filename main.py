@@ -109,5 +109,24 @@ def update_buttons(message):
 
     bot.send_message(message.chat.id, "Выберите опцию:", reply_markup=markup)
 
+@bot.message_handler(func=lambda message: True)
+def handle_city(message):
+    city = message.text.strip()
+    coords = get_coordinates(city)
+    if not coords:
+        bot.send_message(message.chat.id, "Не удалось определить координаты указанного региона.")
+        return
+
+    lat, lon = coords
+    stars = get_visible_stars(lat, lon)
+
+    if stars:
+        response = f"Топ {len(stars)} ярких звёзд, видимых в {city.title()}:\n"
+        for name, mag, alt in stars:
+            response += f"- {name}: зв. величина {mag:.2f}, высота {alt:.1f} градусов.\n"
+    else:
+        response = "Сейчас ни одна яркая звезда не видна."
+
+    bot.send_message(message.chat.id, response)
 
 bot.infinity_polling()
